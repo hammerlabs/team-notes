@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.db
+*.db-wal
+*.db-shm
+.pytest_cache/
+.ruff_cache/
+# The docs site: a build product of `mkdocs build` (scripts/run.sh and the Dockerfile build it).
+site/
+# Local settings for docker compose; .env.example is the template.
+.env
+# Throwaway data from scripts/measure/.
+.measure/
+.DS_Store
