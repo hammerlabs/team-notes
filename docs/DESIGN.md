@@ -116,6 +116,6 @@ Consequences of the decisions and cuts that a client or operator may trip over:
 - A lock passing the idle limit writes nothing, so a held poll reports it at the holder's next renewal, the lease's end, or the end of the poll's wait.
 - A delete is fenced like a save: `If-Match` with the current version, and not while someone else holds the lock.
 - A paging walk never repeats a note; a note edited during the walk moves to the front and is not shown again by that walk, and a note created during it is not shown.
-- A busy database answers 503 `busy` with `Retry-After: 1`; an unreachable one answers 500.
+- A busy database answers 503 `busy` with `Retry-After: 1`; an unreachable one answers 500, or on some routes drops the connection with no response; the service recovers by itself once the database returns.
 - `/health` reports the process only, not the database.
 - There is no CORS: the API takes a bearer header, never a cookie, so there is no cross-site request surface to open.

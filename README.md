@@ -27,7 +27,7 @@ Either way, open http://localhost:8765/ and log in as `ada@example.com` or `ben@
 
 If port 8765 is taken: `PORT=8766 scripts/run.sh`, or `TEAM_NOTES_PORT=8766 docker compose up --build`. Stop either with Ctrl-C; `docker compose down -v` also deletes the Docker data.
 
-The smallest start is `uv run uvicorn app.main:app --port 8765`: the API and test page on SQLite, with no demo data and no docs site, so sign up on the test page.
+The smallest start is `uv run uvicorn app.main:app --port 8765`: the API and test page on SQLite. On a fresh clone it has no demo data and no docs site, so sign up on the test page; it uses the same `notes.db` as `scripts/run.sh`, so after that script it has both.
 
 ## Test it
 
@@ -36,7 +36,7 @@ uv run pytest                                           # SQLite
 TEST_DATABASE_URL=postgresql://... uv run pytest        # the same suite on Postgres
 ```
 
-304 tests pass and one is skipped on each database. [How it is tested](#how-it-is-tested) says what the tests prove.
+304 tests pass and one is skipped on each database. [The tests overview](tests/README.md) has a one-line recipe for a throwaway Postgres, and [How it is tested](#how-it-is-tested) says what the tests prove.
 
 ## The brief
 
@@ -68,7 +68,7 @@ The request flow; click it for the full board. The letters on the board match th
 
 **Why the connection rule.** FastAPI runs a sync handler and each of its dependencies as separate trips to a worker thread. Each store operation opens and closes its database session inside one such trip, so the connection pool can equal the 40 worker threads. A session kept across trips would hold a connection while queuing for the next thread, and enough of those deadlock the pool.
 
-**Cost.** Waiting polls live in one process, so the service runs one worker. The time to wake everyone grows with the number of viewers of one note, because each one re-reads the note on the shared thread pool; the 200-member cap bounds it ([measurements](docs/MEASUREMENTS.md)). **Reopen if** a second process is needed (Postgres `LISTEN`/`NOTIFY`, see Growth path) or waking a busy note takes over 1 s.
+**Cost.** Waiting polls live in one process, so the service runs one worker. The time to wake everyone grows with the number of viewers of one note, because each one re-reads the note on the shared thread pool. The caps bound the worst case at 2,000 waiting polls on one note (200 members, 10 polls each), but it is measured only up to 500, where the slowest poll already takes up to 1.4 s ([Measurements](#measurements)). **Reopen if** a second process is needed (Postgres `LISTEN`/`NOTIFY`, see Growth path) or waking a busy note takes over 1 s.
 
 ### 3. One store, two databases
 
@@ -143,14 +143,14 @@ The system should:
 1. be secure across teams: no request reads or changes data outside the caller's teams, and an outsider cannot tell whether a team or note exists (D1, D9).
 2. prioritise consistency over availability for edits and membership: an accepted save is never silently overwritten, and a removed member loses access on their next request (D1, D2, D3).
 3. recover a note from an editor who has gone: within 60 s if they disappeared, and within 10 minutes if their tab is open but untouched (D2).
-4. have low-latency change notification: a viewer is told within 1 s that a note was saved, locked or unlocked (D4). Met at the target team size; not reliably at ten times it ([Measurements](#measurements)).
-5. have low-latency list and search: under 200 ms at 10,000 notes per team (D7). Met on both databases; search on Postgres has the least margin ([Measurements](#measurements)).
-6. be able to serve about 20 teams of up to 50 people from one process, including every member waiting on a note at once (D4, D6, D8).
+4. have low-latency change notification: a viewer is told within 1 s that a note was saved, locked or unlocked (D4). Met at the target team size on SQLite; not reliably at ten times it, and not measured on Postgres ([Measurements](#measurements)).
+5. have low-latency list and search: under 200 ms at 10,000 notes per team (D7). Met on both databases with a warm cache; search on Postgres has the least margin ([Measurements](#measurements)).
+6. be able to serve about 20 teams of up to 50 people from one process, including every member waiting on a note at once (D4, D6, D8). Not measured at that size: the largest run holds 500 polls, all on one note.
 7. run from one command with nothing installed but uv, and run the same on Postgres in a container (D5).
 
 Below the line: high availability and fault tolerance (one process, one database); compliance, audit logging and encryption at rest; rate limiting and login throttling; more than one region or instance.
 
-**Consistency and availability.** With a single database there is no network partition to tolerate, so the CAP choice shows in what the service does when the database is slow or unreachable, and in which reads could lag if it grew. Edits, the lock and membership choose consistency: they are always read and written against the one database and never served from a stale copy. A database busy past the 5 s wait answers 503 `busy` with `Retry-After: 1`, nothing written; an unreachable one fails the request (500). Two lock holders, or a removed member still reading, is worse than a refusal. Viewer notification leans toward availability: it is eventual, held in memory and self-healing, since a viewer who misses a wake-up catches up on the next poll. Lists and search are the reads that may lag, which is what lets them move to replicas later while edits and membership stay on the primary.
+**Consistency and availability.** With a single database there is no network partition to tolerate, so the CAP choice shows in what the service does when the database is slow or unreachable, and in which reads could lag if it grew. Edits, the lock and membership choose consistency: they are always read and written against the one database and never served from a stale copy. A database busy past the 5 s wait answers 503 `busy` with `Retry-After: 1`, nothing written; an unreachable one fails the request: a 500, or on some routes a dropped connection with no response, and the service recovers by itself once the database returns. Two lock holders, or a removed member still reading, is worse than a refusal. Viewer notification leans toward availability: it is eventual, held in memory and self-healing, since a viewer who misses a wake-up catches up on the next poll. Lists and search are the reads that may lag, which is what lets them move to replicas later while edits and membership stay on the primary.
 
 ## Entities (E)
 
@@ -258,7 +258,7 @@ Against the requirements: list pages and single reads are far under 200 ms on bo
 Product limits bound every query but the team list (below). Exact rules: the contract's "Limits".
 
 - Title 1 to 200 characters, body up to 100,000, request body 1 MB.
-- 200 members per team: four times the target team, bounding the unpaged member list and the number of viewers one change wakes. 10,000 notes per team: the target, bounding the search scan.
+- 200 members per team: four times the target team, bounding the unpaged member list. With 10 held polls per user, it also bounds one note's waiting polls at 2,000. 10,000 notes per team: the target, bounding the search scan.
 - Page size 1 to 100, `cursor` up to 200 characters, `q` up to 200.
 - Lock lease 60 s, renewed every 20 s, idle limit 10 minutes; a long poll waits up to 25 s; 10 held polls per user.
 - Tokens last 7 days; there is no logout.
@@ -270,13 +270,15 @@ Product limits bound every query but the team list (below). Exact rules: the con
 - `/docs` and `/redoc` load their scripts from a CDN, unpinned.
 - The idle rule trusts the client's `active` flag; only an admin break bounds a client that always sends `true`.
 - Typing is reported at the next renewal, up to 20 s later, so typing that starts in the last 20 s before the idle limit can still lose the lock (409 `lock_idle`); the draft is kept and the lock can be taken again.
-- A Postgres server set to a non-UTC time zone is untested; times are stored as UTC in `timestamp without time zone`.
+- Times are stored as UTC in `timestamp without time zone` and compared only with values the app supplies, so the server's time zone is not used; the suite passes on a Postgres server set to a non-UTC zone.
+- While the database is unreachable, `/health` still answers 200, and a held poll returns its error only when its wait ends.
 
 ## What I'd change, add, or stop doing with more time
 
 **Change**
 
-- Map a database connection failure to 503 with `Retry-After`, as a busy database is; today it is a 500.
+- Map a database connection failure to 503 with `Retry-After`, as a busy database is; today it is a 500 or a dropped connection.
+- Allow one held poll per user per note, so one note's waiting polls are bounded by its members, not ten times that.
 - Renew at once on the first keystroke after a quiet spell, not at the next 20 s tick, so typing just before the idle limit keeps the lock.
 - Use the database's clock for leases and the idle limit, so a write is judged when it runs, not when it arrived.
 - Make the store async if requests ever queue for threads while the CPU idles (D8).
@@ -293,7 +295,7 @@ Product limits bound every query but the team list (below). Exact rules: the con
 
 **Stop doing**
 
-- The docs site and the measurement scripts: more packaging than a service this size needs. The README, the contract and the tests carry the argument.
+- The docs site: more packaging than a service this size needs. The README, the contract and the tests carry the argument.
 
 ## Growth path (G)
 
