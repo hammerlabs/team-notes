@@ -53,6 +53,16 @@
       <input name="password" type="password" placeholder="password" required autocomplete="current-password">
       <button>Log in</button>
     </form>
+    <p><strong>Demo logins</strong>, present when the demo data is seeded (<code>scripts/run.sh</code> or Docker).
+      The password for all four is <code>demo-password</code>.</p>
+    <ul>
+      <li><code>ada@example.com</code>: Ada Lindqvist, admin of Platform</li>
+      <li><code>ben@example.com</code>: Ben Okafor, member of Platform, admin of Spring Launch</li>
+      <li><code>chloe@example.com</code>: Chloé Durand, member of Spring Launch</li>
+      <li><code>dev@example.com</code>: Dev Raman, member of Spring Launch</li>
+    </ul>
+    <p class="muted">The seeded notes and things to try: <a href="/site/SEED_DATA/">seed data (/site/SEED_DATA/)</a>.
+      On the bare <code>uv run uvicorn</code> path nothing is seeded: sign up instead.</p>
   </section>
   <section>
     <h2>Sign up (then log in)</h2>
@@ -127,6 +137,8 @@
         <button>Log in</button>
         <button type="button" id="demo-signup">Sign up</button>
       </form>
+      <p class="muted">With the demo data: <code>chloe@example.com</code> or <code>dev@example.com</code> (Spring Launch),
+        <code>ada@example.com</code> or <code>ben@example.com</code> (Platform), password <code>demo-password</code>.</p>
       <div id="demo-session" class="row" hidden>
         <span class="grow">Logged in as <strong id="demo-name"></strong> <span class="muted" id="demo-email"></span></span>
         <button type="button" id="demo-open">Open the main pane's note</button>

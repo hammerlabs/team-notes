@@ -16,7 +16,7 @@ Users should be able to:
 6. list a team's notes, most recently edited first, and search them by text.
 7. Team admins should be able to release a note that another member is holding.
 
-Below the line: edit the same note at the same time; share a note outside its team, or keep one private; restore a deleted note or an earlier version; add attachments or rich text; invite by email, change roles, rename or delete a team; log out, reset a password or use single sign-on.
+Below the line: edit the same note at the same time; share a note outside its team, or keep one private; restore a deleted note or an earlier version; add attachments or rich text; invite by email, change roles, rename or delete a team; log out, reset a password or use single sign-on; a service administrator who can see or manage every team (an exception to team isolation, so it needs its own access path and an audit log).
 
 ### Non-functional (T)
 
