@@ -2,6 +2,44 @@
 
 Kevin Hammer
 
+A REST backend for notes shared within small teams: FastAPI on SQLite, or on Postgres under Docker.
+
+## Run it
+
+**Without Docker.** Needs only [uv](https://docs.astral.sh/uv/), which fetches Python 3.12:
+
+```sh
+scripts/run.sh
+```
+
+**With Docker.** The service and Postgres 17, in two containers:
+
+```sh
+docker compose up --build
+```
+
+Either way, open http://localhost:8765/ and log in as `ada@example.com` or `ben@example.com`, password `demo-password`. Both commands seed that demo data into an empty database and serve everything on one port:
+
+- `/` is a test page that drives every endpoint and lists the demo logins
+- `/docs` is the API explorer
+- `/site/` is the docs site
+- `/health` answers 200 while the process is up
+
+If port 8765 is taken: `PORT=8766 scripts/run.sh`, or `TEAM_NOTES_PORT=8766 docker compose up --build`. Stop either with Ctrl-C; `docker compose down -v` also deletes the Docker data.
+
+The smallest start is `uv run uvicorn app.main:app --port 8765`: the API and test page on SQLite, with no demo data and no docs site, so sign up on the test page.
+
+## Test it
+
+```sh
+uv run pytest                                           # SQLite
+TEST_DATABASE_URL=postgresql://... uv run pytest        # the same suite on Postgres
+```
+
+304 tests pass and one is skipped on each database. [How it is tested](#how-it-is-tested) says what the tests prove.
+
+## The brief
+
 > "You're building the backend for a note-taking service used and shared amongst several small teams. Users need somewhere to capture and work with their notes. Deliver a runnable REST service and README. We will review your code for clarity, correctness, and the tradeoffs you made. You choose the language, framework, schema, endpoints, storage, and what's in scope. Be ready to defend those choices."
 
 The answer is a FastAPI service in Python 3.12 over one relational database, SQLite by default and Postgres in Docker. Teams own notes; every member reads every note of the team, and one member at a time edits a note while the others watch it change. The hard part is shared data that stays correct: a team's notes are invisible outside it, no accepted edit is overwritten silently, a vanished or idle editor does not block a note for long, and viewers learn within a second that a note changed. [The design walk](docs/DESIGN.md) follows the design in order; [the API contract](docs/API_CONTRACT.md) is the wire format.
@@ -62,9 +100,9 @@ Code: [app/store/postgres.py](app/store/postgres.py) `_lock_team`, [app/store/sq
 | [D8](#d8-sync-handlers-on-a-thread-pool) sync handlers on 40 threads, the long poll the one async route | [app/main.py](app/main.py) `create_app` | [tests/test_burst.py](tests/test_burst.py) `test_thread_pool_and_connection_pool_are_one_number` |
 | [D9](#d9-authentication) opaque tokens stored hashed; a failed login looks the same whether or not the email exists | [app/security.py](app/security.py) `verify_password`; [app/routers/auth.py](app/routers/auth.py) `login` | [tests/test_auth.py](tests/test_auth.py) `test_the_dummy_hash_has_the_production_cost` |
 
-## Run it
+## Running it, in detail
 
-Needs [uv](https://docs.astral.sh/uv/) (it fetches Python 3.12) or Docker.
+The three run paths:
 
 | Path | Command | Database | Docs site and demo data |
 |---|---|---|---|
@@ -80,14 +118,9 @@ More in [running it](docs/RUNNING.md) and [the curl walkthrough](docs/WALKTHROUG
 
 ![Two-user demo: Ben holds the lock and edits; Chloé's pane shows his lock and her refused 409 note_locked](docs/demo.png)
 
-## Test it
+## How it is tested
 
-```sh
-uv run pytest                                           # SQLite
-TEST_DATABASE_URL=postgresql://... uv run pytest        # the same suite on Postgres, a schema per test
-```
-
-305 tests are collected; 304 pass and one is skipped on each database (it inspects the other database's internals). Each test gets a fresh app and database with nothing in the database layer mocked, and a replaceable clock for lease, idle and token expiry. Races use real concurrent requests. The thread-race tests in `test_races.py` are mutation-checked on both databases (each guard moved out of its statement, or the team row lock removed, must make the test fail), except the race between an idle release and another take, which its docstring marks as not mutation-checked. The route guard check in `test_isolation.py`, the connection rule in `test_burst.py` and the shutdown test in `test_changes.py` are mutation-checked too, each recorded in its docstring; other tests are not. Which test backs which claim: [the tests overview](tests/README.md).
+`uv run pytest` runs the suite on SQLite; with `TEST_DATABASE_URL=postgresql://...` the same suite runs on Postgres, a schema per test ([the tests overview](tests/README.md) has a throwaway-container recipe). 305 tests are collected; 304 pass and one is skipped on each database (it inspects the other database's internals). Each test gets a fresh app and database with nothing in the database layer mocked, and a replaceable clock for lease, idle and token expiry. Races use real concurrent requests. The thread-race tests in `test_races.py` are mutation-checked on both databases (each guard moved out of its statement, or the team row lock removed, must make the test fail), except the race between an idle release and another take, which its docstring marks as not mutation-checked. The route guard check in `test_isolation.py`, the connection rule in `test_burst.py` and the shutdown test in `test_changes.py` are mutation-checked too, each recorded in its docstring; other tests are not. Which test backs which claim: [the tests overview](tests/README.md).
 
 ## Requirements
 
