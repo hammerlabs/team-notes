@@ -1,0 +1,15 @@
+# The build copies only what each stage names; this keeps the context small and
+# keeps local state (databases, virtualenvs, a built site, secrets) out of it.
+# Patterns match from the context root, so `**/` makes them match at any depth, like .gitignore's.
+.venv/
+site/
+**/__pycache__/
+.pytest_cache/
+.ruff_cache/
+**/*.db
+**/*.db-wal
+**/*.db-shm
+.env
+.git/
+.measure/
+**/.DS_Store
