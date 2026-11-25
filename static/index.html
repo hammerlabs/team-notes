@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Notes test page</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/style.css">
+<!--
+  Scripts (ES modules, no build step), all under /static/js:
+    api.js           ApiClient (the only fetch; one per user, token in sessionStorage), ApiError
+    dom.js           DOM helpers, banner, request log
+    watcher.js       the long-poll loop for one note, with its visible state
+    note-session.js  the client protocol for one open note (viewing, acquiring, editing, lock-lost)
+    note-pane.js     renders a NoteSession into a copy of #note-pane-tpl
+    demo.js          the opt-in second user and pane
+    app.js           entry point: log in, teams, members, notes list, the main pane
+-->
+<script type="module" src="/static/js/app.js"></script>
+</head>
+<body>
+<h1>Team Notes API: manual test page</h1>
+<p class="muted" id="doc-links">Documentation, served by this app:
+  <a href="/site/">docs site (/site/)</a> ·
+  <a href="/docs">API explorer (/docs)</a></p>
+<details class="howto">
+  <summary><strong>How to test the edit lock and long poll</strong></summary>
+  <p>Single user: log in, create or select a team, create or open a note, then Edit, Save and Done.
+    The lock is renewed every <code>renew_after_seconds</code> while editing; the request log shows each call.
+    Each renewal says whether you typed since the last one (<code>active</code>). After 10 minutes without typing or
+    saving, the next renewal is refused (<code>lock_idle</code>) and the lock released; your text stays in the editor.</p>
+  <p>Two users on one screen (tick <em>Two-user demo</em> after logging in):</p>
+  <ol>
+    <li>Log in as an admin of a team (user A) and open a note. Tick <em>Two-user demo</em> and log in user B in the right pane.
+      If B is not yet a member, press <em>Add to the main user's team</em>. B opens the same note and starts long-polling.</li>
+    <li>Press Edit in A. B's poll wakes and B shows "Locked by A". Press Edit in B: 409 <code>note_locked</code> in B's pane.</li>
+    <li>Change the text in A and Save. B's poll wakes and B shows the new text and version.</li>
+    <li>Press Done in A. B shows Unlocked.</li>
+    <li>Press Edit in B and type something. In A (an admin) press Break lock. B's poll (or its next renewal, <code>lock_required</code>) moves B to "lock lost"; B's text is kept.</li>
+    <li>In A: Edit, change the text, Save, Done. In B press Edit (re-takes the lock, keeps B's text) and Save: 412 <code>precondition_failed</code>.</li>
+  </ol>
+  <p>Each pane shows its long poll: waiting (with the elapsed time), woke after N ms, or 204 and polled again.
+    Lower <em>wait</em> to see 204s sooner. Without the demo, a second window or tab (not a duplicated one, which copies session storage) works as user B too.</p>
+</details>
+
+<div id="banner" hidden><span id="banner-text"></span><button id="banner-close" type="button">Dismiss</button></div>
+
+<div id="login-view" class="grid">
+  <section>
+    <h2>Log in</h2>
+    <form id="login-form">
+      <input name="email" type="email" placeholder="email" required autocomplete="username">
+      <input name="password" type="password" placeholder="password" required autocomplete="current-password">
+      <button>Log in</button>
+    </form>
+  </section>
+  <section>
+    <h2>Sign up (then log in)</h2>
+    <form id="signup-form">
+      <input name="name" placeholder="name" required>
+      <input name="email" type="email" placeholder="email" required autocomplete="username">
+      <input name="password" type="password" placeholder="password (8+ chars)" required autocomplete="new-password">
+      <button>Sign up</button>
+    </form>
+  </section>
+</div>
+
+<div id="app-view" hidden>
+  <section class="row">
+    <span class="grow">Logged in as <strong id="me-name"></strong> <span class="muted" id="me-email"></span></span>
+    <label><input type="checkbox" id="demo-toggle"> Two-user demo</label>
+    <button id="logout" type="button">Log out</button>
+  </section>
+
+  <div class="grid">
+    <section>
+      <h2>Teams</h2>
+      <form id="team-form">
+        <input name="name" placeholder="new team name" required>
+        <button>Create</button>
+        <button type="button" id="teams-refresh">Refresh</button>
+      </form>
+      <ul class="list" id="teams"></ul>
+    </section>
+
+    <section id="members-section" hidden>
+      <h2>Members of <span id="team-name"></span> <span class="muted" id="team-role"></span></h2>
+      <form id="member-form">
+        <input name="email" type="email" placeholder="email" required>
+        <select name="role"><option>member</option><option>admin</option></select>
+        <button>Add</button>
+        <button type="button" id="members-refresh">Refresh</button>
+      </form>
+      <ul class="list" id="members"></ul>
+    </section>
+
+    <section id="notes-section" hidden>
+      <h2>Notes</h2>
+      <form id="search-form">
+        <input name="q" placeholder="search title and body">
+        <label>limit <input name="limit" type="number" min="1" max="100" value="50"></label>
+        <button>Search</button>
+      </form>
+      <div class="row">
+        <button type="button" id="next-page" disabled>Next page</button>
+      </div>
+      <ul class="list" id="notes"></ul>
+      <form id="note-form">
+        <input name="title" placeholder="new note title" required>
+        <textarea name="body" class="short" placeholder="body (optional)"></textarea>
+        <button>Create note</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="note-area" class="note-area">
+    <section id="note-section" hidden></section>
+
+    <section id="demo-section" hidden>
+      <div class="row">
+        <h2 class="grow">Second user (two-user demo)</h2>
+      </div>
+      <form id="demo-login-form">
+        <input name="email" type="email" placeholder="second user's email" required autocomplete="off">
+        <input name="password" type="password" placeholder="password" required autocomplete="off">
+        <input name="name" placeholder="name (sign up only)">
+        <button>Log in</button>
+        <button type="button" id="demo-signup">Sign up</button>
+      </form>
+      <div id="demo-session" class="row" hidden>
+        <span class="grow">Logged in as <strong id="demo-name"></strong> <span class="muted" id="demo-email"></span></span>
+        <button type="button" id="demo-open">Open the main pane's note</button>
+        <button type="button" id="demo-add">Add to the main user's team</button>
+        <button type="button" id="demo-logout">Log out</button>
+      </div>
+      <div id="demo-pane" hidden></div>
+    </section>
+  </div>
+</div>
+
+<section class="spaced">
+  <div class="row"><h2 class="grow">Request log (newest first)</h2><button type="button" id="log-clear">Clear</button></div>
+  <div id="log"></div>
+</section>
+
+<template id="note-pane-tpl">
+  <div class="pane">
+    <div class="row">
+      <h2 class="grow"><span class="who" data-f="who"></span> <span class="muted" data-f="role"></span></h2>
+      <span class="phase" data-f="phase"></span>
+    </div>
+    <div class="pane-msg" data-f="msg" hidden></div>
+    <div data-f="body-area">
+      <input class="note-title" data-f="title" readonly aria-label="Title">
+      <dl class="meta">
+        <dt>Version</dt><dd data-f="version"></dd>
+        <dt>Tag</dt><dd data-f="tag"></dd>
+        <dt>Lock</dt><dd data-f="lock"></dd>
+        <dt>Renewal</dt><dd data-f="renewal"></dd>
+        <dt>Last change</dt><dd data-f="changed"></dd>
+      </dl>
+      <div class="warn" data-f="warning"></div>
+      <textarea data-f="body" readonly aria-label="Body"></textarea>
+      <div class="row">
+        <button type="button" data-f="edit">Edit</button>
+        <button type="button" data-f="save">Save</button>
+        <button type="button" data-f="done">Done</button>
+        <button type="button" data-f="break-lock">Break lock</button>
+        <button type="button" data-f="delete">Delete note</button>
+        <button type="button" data-f="reload">Reload</button>
+        <button type="button" data-f="close">Close</button>
+      </div>
+    </div>
+    <div class="poll">
+      <div class="row">
+        <span class="watch grow" data-f="watch"></span>
+        <label class="muted">wait <input type="number" min="1" max="25" value="25" data-f="wait"> s</label>
+      </div>
+      <ol class="poll-history" data-f="history"></ol>
+    </div>
+  </div>
+</template>
+</body>
+</html>
