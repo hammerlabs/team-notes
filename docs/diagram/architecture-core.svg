@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 0 1350 1584" width="1350" height="1584">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1e1e1e" />
+    </marker>
+  </defs>
+  <rect x="-30" y="0" width="1350" height="1584" fill="#ffffff" />
+  <rect x="10" y="168" width="1270" height="1194" rx="8" ry="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="0.6" stroke-dasharray="8 4" />
+  <rect x="455" y="40" width="300" height="108" rx="8" ry="8" fill="#a5d8ff" stroke="#1971c2" stroke-width="2" opacity="1" />
+  <rect x="40" y="652" width="210" height="132" rx="8" ry="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2" opacity="1" />
+  <rect x="627.5" y="228" width="240" height="132" rx="8" ry="8" fill="#ffc9c9" stroke="#e03131" stroke-width="2" opacity="1" />
+  <rect x="765" y="440" width="280" height="132" rx="8" ry="8" fill="#ffc9c9" stroke="#e03131" stroke-width="2" opacity="1" />
+  <rect x="310" y="652" width="240" height="132" rx="8" ry="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2" opacity="1" />
+  <rect x="610" y="652" width="270" height="132" rx="8" ry="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2" opacity="1" />
+  <rect x="940" y="652" width="310" height="132" rx="8" ry="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2" opacity="1" />
+  <rect x="1000" y="976" width="270" height="132" rx="8" ry="8" fill="#ffec99" stroke="#f08c00" stroke-width="2" opacity="1" />
+  <rect x="525" y="964" width="250" height="156" rx="8" ry="8" fill="#d0bfff" stroke="#7048e8" stroke-width="2" opacity="1" />
+  <rect x="400" y="1200" width="220" height="132" rx="8" ry="8" fill="#d0bfff" stroke="#7048e8" stroke-width="2" opacity="1" />
+  <rect x="695" y="1200" width="190" height="132" rx="8" ry="8" fill="#d0bfff" stroke="#7048e8" stroke-width="2" opacity="1" />
+  <rect x="405" y="1424" width="210" height="108" rx="8" ry="8" fill="#ffd8a8" stroke="#e8590c" stroke-width="2" opacity="1" />
+  <rect x="690" y="1412" width="250" height="132" rx="8" ry="8" fill="#ffd8a8" stroke="#e8590c" stroke-width="2" opacity="1" />
+  <polyline points="605,148 145,652" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="605,148 747.5,228" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="747.5,360 430,652" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="747.5,360 905,440" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="905,572 430,652" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="905,572 745,652" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="905,572 1095,652" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="745,784 1100,976" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="1095,784 1135,976" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="430,784 1020,976" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="145,784 650,964" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="430,784 650,964" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="745,784 650,964" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="650,1120 510,1200" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="650,1120 790,1200" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="510,1332 510,1424" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="790,1332 815,1412" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="1095,784 650,964" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <polyline points="627.5,294 580,294 580,964" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="18" y="192" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#495057" text-anchor="start">
+    <tspan x="18" dy="0">D8 One FastAPI process, one worker, sync handlers on 40 threads</tspan>
+  </text>
+  <text x="605" y="89.25" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#1971c2" text-anchor="middle">
+    <tspan x="605" dy="0">Client</tspan>
+    <tspan x="605" dy="23.75">curl, test page (/), tests</tspan>
+  </text>
+  <text x="145" y="701.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#2f9e44" text-anchor="middle">
+    <tspan x="145" dy="0">D9 Auth routes</tspan>
+    <tspan x="145" dy="23.75">POST /auth/signup</tspan>
+    <tspan x="145" dy="23.75">POST /auth/login</tspan>
+  </text>
+  <text x="747.5" y="277.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#e03131" text-anchor="middle">
+    <tspan x="747.5" dy="0">D9 Who are you?</tspan>
+    <tspan x="747.5" dy="23.75">bearer token -&gt; user</tspan>
+    <tspan x="747.5" dy="23.75">else 401; GET /me</tspan>
+  </text>
+  <text x="905" y="489.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#e03131" text-anchor="middle">
+    <tspan x="905" dy="0">D1 Are you in this team?</tspan>
+    <tspan x="905" dy="23.75">require_member</tspan>
+    <tspan x="905" dy="23.75">else 404, never cached</tspan>
+  </text>
+  <text x="430" y="701.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#2f9e44" text-anchor="middle">
+    <tspan x="430" dy="0">Team routes</tspan>
+    <tspan x="430" dy="23.75">/teams, /teams/{id},</tspan>
+    <tspan x="430" dy="23.75">/teams/{id}/members</tspan>
+  </text>
+  <text x="745" y="701.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#2f9e44" text-anchor="middle">
+    <tspan x="745" dy="0">D2 Note and lock routes</tspan>
+    <tspan x="745" dy="23.75">save needs live lock</tspan>
+    <tspan x="745" dy="23.75">and a matching If-Match</tspan>
+  </text>
+  <text x="1095" y="701.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#2f9e44" text-anchor="middle">
+    <tspan x="1095" dy="0">D4 Changes route</tspan>
+    <tspan x="1095" dy="23.75">async long poll, &lt;= 25 s</tspan>
+    <tspan x="1095" dy="23.75">reads the tag via the store</tspan>
+  </text>
+  <text x="1135" y="1025.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#f08c00" text-anchor="middle">
+    <tspan x="1135" dy="0">D4 Notifier (in memory)</tspan>
+    <tspan x="1135" dy="23.75">note id -&gt; waiters</tspan>
+    <tspan x="1135" dy="23.75">one process only</tspan>
+  </text>
+  <text x="650" y="1013.5" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#7048e8" text-anchor="middle">
+    <tspan x="650" dy="0">D5 Store</tspan>
+    <tspan x="650" dy="23.75">D3 conditional writes</tspan>
+    <tspan x="650" dy="23.75">D6 40 connections</tspan>
+    <tspan x="650" dy="23.75">= 40 threads</tspan>
+  </text>
+  <text x="510" y="1249.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#7048e8" text-anchor="middle">
+    <tspan x="510" dy="0">SqliteStore</tspan>
+    <tspan x="510" dy="23.75">D7 casefold search</tspan>
+    <tspan x="510" dy="23.75">single writer</tspan>
+  </text>
+  <text x="790" y="1249.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#7048e8" text-anchor="middle">
+    <tspan x="790" dy="0">PostgresStore</tspan>
+    <tspan x="790" dy="23.75">D7 ILIKE search</tspan>
+    <tspan x="790" dy="23.75">team row lock</tspan>
+  </text>
+  <text x="510" y="1473.25" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#e8590c" text-anchor="middle">
+    <tspan x="510" dy="0">SQLite file, WAL</tspan>
+    <tspan x="510" dy="23.75">default, no setup</tspan>
+  </text>
+  <text x="815" y="1461.375" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#e8590c" text-anchor="middle">
+    <tspan x="815" dy="0">Postgres</tspan>
+    <tspan x="815" dy="23.75">DATABASE_URL,</tspan>
+    <tspan x="815" dy="23.75">Docker: own container</tspan>
+  </text>
+  <text x="320" y="380.8" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#1e1e1e" stroke="#f9fafb" stroke-width="8" stroke-linejoin="round" paint-order="stroke" text-anchor="middle">
+    <tspan x="320" dy="0">email + password</tspan>
+  </text>
+  <text x="774.75" y="206" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#1e1e1e" stroke="#f9fafb" stroke-width="8" stroke-linejoin="round" paint-order="stroke" text-anchor="middle">
+    <tspan x="774.75" dy="0">Bearer token</tspan>
+  </text>
+  <text x="911.25" y="396" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#1e1e1e" stroke="#f9fafb" stroke-width="8" stroke-linejoin="round" paint-order="stroke" text-anchor="middle">
+    <tspan x="911.25" dy="0">/teams/{id}/...</tspan>
+  </text>
+  <text x="464.375" y="585" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#1e1e1e" stroke="#f9fafb" stroke-width="8" stroke-linejoin="round" paint-order="stroke" text-anchor="middle">
+    <tspan x="464.375" dy="0">/teams</tspan>
+  </text>
+  <text x="1195" y="886" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#1e1e1e" stroke="#f9fafb" stroke-width="8" stroke-linejoin="round" paint-order="stroke" text-anchor="middle">
+    <tspan x="1195" dy="0">listen, then read</tspan>
+  </text>
+  <text x="833.75" y="838" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#1e1e1e" stroke="#f9fafb" stroke-width="8" stroke-linejoin="round" paint-order="stroke" text-anchor="middle">
+    <tspan x="833.75" dy="0">wake after commit</tspan>
+  </text>
+  <text x="914.98" y="947.824" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#1e1e1e" stroke="#f9fafb" stroke-width="8" stroke-linejoin="round" paint-order="stroke" text-anchor="middle">
+    <tspan x="914.98" dy="0">wake on member removal</tspan>
+  </text>
+  <text x="507.28000000000003" y="420" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#1e1e1e" stroke="#f9fafb" stroke-width="8" stroke-linejoin="round" paint-order="stroke" text-anchor="middle">
+    <tspan x="507.28000000000003" dy="0">session lookup</tspan>
+  </text>
+</svg>

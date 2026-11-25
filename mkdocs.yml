@@ -1,0 +1,109 @@
+# The docs site: README, design, walkthrough, contract, seed data, diagram, and pages generated from
+# the docstrings of app/ and tests/. Build: `uv run --group docs mkdocs build`
+# (writes site/, which the app serves at /site/). Preview alone: `... mkdocs serve`.
+site_name: Team Notes
+site_description: Notes shared by small teams, with an edit lock and change long-polling.
+# Every build is strict: a broken link or a missing page fails it instead of
+# printing a warning nobody reads.
+strict: true
+
+theme:
+  name: material
+  # No Google Fonts: the site must work offline and request nothing from
+  # another host (the app's CSP for /site/ allows only this origin).
+  font: false
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: {icon: material/weather-night, name: Dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: {icon: material/weather-sunny, name: Light mode}
+  features:
+    - content.code.copy
+    # A section's index.md is its landing page (Tests, API reference).
+    - navigation.indexes
+    - navigation.top
+    - search.highlight
+
+plugins:
+  - search
+  # Writes index.md (the README), reference/ and tests/ (tests/README.md is its index) at build time;
+  # see the script.
+  - gen-files:
+      scripts: [scripts/docs_pages.py]
+  # Lets the generated SUMMARY.md files order and group the generated pages.
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - mkdocstrings:
+      handlers:
+        python:
+          # `tests` too, so test modules load as `test_http`, `conftest`, `helpers`.
+          paths: [., tests]
+          options:
+            docstring_style: google
+            members_order: source
+            # Tests read top to bottom as written, not attributes, then classes, then functions.
+            group_by_category: false
+            show_root_heading: true
+            heading_level: 1
+            show_source: true
+            # Undocumented members still appear, so nothing is hidden by omission. Test pages override this
+            # (docs_pages.py), and the build fails there if a test or fixture has no docstring.
+            show_if_no_docstring: true
+            # An overriding method without a docstring shows the one it overrides.
+            extensions: [scripts/griffe_inherit.py]
+            # Hide only dunders. The default also hides `_private` names, whose
+            # docstrings here carry many of the reasons.
+            filters: ["!^__"]
+            show_signature_annotations: true
+            separate_signature: true
+
+# Repo-to-site link rewriting for README.md and docs/*.md; see the script.
+hooks:
+  - scripts/docs_hooks.py
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+validation:
+  # `/`, `/docs` and `/redoc` are the running app's own routes, outside this site.
+  nav:
+    absolute_links: ignore
+  links:
+    absolute_links: ignore
+    unrecognized_links: warn
+    anchors: warn
+
+# The diagram's build inputs stay in the repository, not in the site.
+exclude_docs: |
+  diagram/*.py
+  diagram/*.mjs
+  diagram/*.sh
+  diagram/*.ir.json
+
+nav:
+  - Home: index.md
+  - Design: DESIGN.md
+  - Running it: RUNNING.md
+  - Walkthrough: WALKTHROUGH.md
+  - API contract: API_CONTRACT.md
+  - Seed data: SEED_DATA.md
+  - Measurements: MEASUREMENTS.md
+  - Architecture diagram:
+      - Full board: architecture.md
+      - Diagram sources: diagram/README.md
+  - API reference: reference/
+  - Tests: tests/
+  # Served by the app on the same port; they work when this site is opened at /site/ on the app.
+  # The test page is `/#` because literate-nav reads a bare `/` as "this directory".
+  - Running app:
+      - Test page (/): /#
+      - API explorer (/docs): /docs
+      - ReDoc (/redoc): /redoc

@@ -1,0 +1,183 @@
+{
+ "title": "Team Notes: request flow",
+ "direction": "TB",
+ "nodes": [
+  {
+   "id": "client",
+   "label": "Client\ncurl, test page (/), tests",
+   "type": "user",
+   "color": "blue"
+  },
+  {
+   "id": "auth_routes",
+   "label": "D9 Auth routes\nPOST /auth/signup\nPOST /auth/login",
+   "type": "component",
+   "color": "green"
+  },
+  {
+   "id": "authn",
+   "label": "D9 Who are you?\nbearer token -> user\nelse 401; GET /me",
+   "type": "component",
+   "color": "red"
+  },
+  {
+   "id": "authz",
+   "label": "D1 Are you in this team?\nrequire_member\nelse 404, never cached",
+   "type": "component",
+   "color": "red"
+  },
+  {
+   "id": "team_routes",
+   "label": "Team routes\n/teams, /teams/{id},\n/teams/{id}/members",
+   "type": "component",
+   "color": "green"
+  },
+  {
+   "id": "note_routes",
+   "label": "D2 Note and lock routes\nsave needs live lock\nand a matching If-Match",
+   "type": "component",
+   "color": "green"
+  },
+  {
+   "id": "changes",
+   "label": "D4 Changes route\nasync long poll, <= 25 s\nreads the tag via the store",
+   "type": "component",
+   "color": "green"
+  },
+  {
+   "id": "notifier",
+   "label": "D4 Notifier (in memory)\nnote id -> waiters\none process only",
+   "type": "queue",
+   "color": "yellow"
+  },
+  {
+   "id": "store",
+   "label": "D5 Store\nD3 conditional writes\nD6 40 connections\n= 40 threads",
+   "type": "component",
+   "color": "purple"
+  },
+  {
+   "id": "sqlite_store",
+   "label": "SqliteStore\nD7 casefold search\nsingle writer",
+   "type": "component",
+   "color": "purple"
+  },
+  {
+   "id": "pg_store",
+   "label": "PostgresStore\nD7 ILIKE search\nteam row lock",
+   "type": "component",
+   "color": "purple"
+  },
+  {
+   "id": "sqlite_db",
+   "label": "SQLite file, WAL\ndefault, no setup",
+   "type": "database",
+   "color": "orange"
+  },
+  {
+   "id": "pg_db",
+   "label": "Postgres\nDATABASE_URL,\nDocker: own container",
+   "type": "database",
+   "color": "orange"
+  }
+ ],
+ "edges": [
+  {
+   "from": "client",
+   "to": "auth_routes",
+   "label": "email + password"
+  },
+  {
+   "from": "client",
+   "to": "authn",
+   "label": "Bearer token"
+  },
+  {
+   "from": "authn",
+   "to": "team_routes",
+   "label": "/teams"
+  },
+  {
+   "from": "authn",
+   "to": "authz",
+   "label": "/teams/{id}/..."
+  },
+  {
+   "from": "authz",
+   "to": "team_routes"
+  },
+  {
+   "from": "authz",
+   "to": "note_routes"
+  },
+  {
+   "from": "authz",
+   "to": "changes"
+  },
+  {
+   "from": "note_routes",
+   "to": "notifier",
+   "label": "wake after commit"
+  },
+  {
+   "from": "changes",
+   "to": "notifier",
+   "label": "listen, then read"
+  },
+  {
+   "from": "team_routes",
+   "to": "notifier",
+   "label": "wake on member removal"
+  },
+  {
+   "from": "auth_routes",
+   "to": "store"
+  },
+  {
+   "from": "team_routes",
+   "to": "store"
+  },
+  {
+   "from": "note_routes",
+   "to": "store"
+  },
+  {
+   "from": "store",
+   "to": "sqlite_store"
+  },
+  {
+   "from": "store",
+   "to": "pg_store"
+  },
+  {
+   "from": "sqlite_store",
+   "to": "sqlite_db"
+  },
+  {
+   "from": "pg_store",
+   "to": "pg_db"
+  },
+  {
+   "from": "changes",
+   "to": "store"
+  }
+ ],
+ "groups": [
+  {
+   "id": "app",
+   "label": "D8 One FastAPI process, one worker, sync handlers on 40 threads",
+   "members": [
+    "auth_routes",
+    "authn",
+    "authz",
+    "team_routes",
+    "note_routes",
+    "changes",
+    "notifier",
+    "store",
+    "sqlite_store",
+    "pg_store"
+   ]
+  }
+ ]
+}
