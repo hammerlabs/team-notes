@@ -296,6 +296,11 @@ Product limits bound every query but the team list (below). Exact rules: the con
 **Stop doing**
 
 - The docs site: more packaging than a service this size needs. The README, the contract and the tests carry the argument.
+- Building the schema with `create_all` on startup. It creates missing tables and leaves an existing table as it is, so a later column never appears. Replace it with migrations once a database has notes to keep.
+- Treating `active=true` as typing. A renewal proves the tab is open. A client that always sends `true` holds the note until an admin breaks the lock. Judge idleness from saves, or keep the 60 s lease and drop the flag.
+- A search answer that depends on the engine. SQLite's Python `casefold` makes `strasse` find `Straße`; Postgres `ILIKE` does not, so the same query matches different notes. One folding rule.
+- Loading `/docs` and `/redoc` from an unpinned CDN. Vendor those scripts, or serve the OpenAPI schema alone.
+- SQLite, once a second app process is required. `uv run` is why it is there; past one process, Postgres is the engine the rules need.
 
 ## Growth path (G)
 
